@@ -31,6 +31,31 @@ Below is a visual walk-through of the utility interface handling wireless networ
 
 ---
 
+## ⚠️ Current Scope & Limitations
+
+Please keep the following constraints in mind for the current release of the application:
+
+*   **🤖 Android Only (Stable):** The active release fully supports wireless and wired pairing, bulk installation, and app uninstallation via **Android APKs** using the system `adb` pipeline.
+*   **🍏 iOS Support (Coming Soon):** The integration architecture for iOS (`.ipa` deployments via `xcrun devicectl` and `libimobiledevice`) is currently under active design and development. 
+*   **🌐 Network Dependencies:** Wireless actions rely entirely on all devices being on the exact same local Wi-Fi subnet with a stable ping.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributors to help expand the capabilities of this tool! Whether you want to fix bugs, optimize the parallel deployment stream, or help build out the **iOS implementation**, your help is highly appreciated.
+
+### How to Get Involved:
+1. **Fork** the repository.
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'feat: add some amazing feature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a **Pull Request**.
+
+If you are an iOS developer with experience in `libimobiledevice` or Xcode CLI tools, feel free to check out our open issues regarding the iOS implementation path!
+
+---
+
 ## 🛠️ System Architecture
 
 The tool serves as a visual orchestration layer that directly communicates with native platform SDK toolchains:
