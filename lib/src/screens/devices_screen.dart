@@ -144,6 +144,13 @@ class _TopBar extends StatelessWidget {
 
           const Spacer(),
 
+          _OutlineChip(
+            label: 'Modes',
+            icon: Icons.apps_rounded,
+            onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
+          ),
+          const SizedBox(width: 8),
+
           // Device count badge
           if (provider.devices.isNotEmpty)
             Container(

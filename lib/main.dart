@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:mini_mdm_installer/config/theme/app_theme.dart';
+import 'package:mini_mdm_installer/root_app.dart';
 import 'package:mini_mdm_installer/src/providers/device_provider.dart';
-import 'package:mini_mdm_installer/src/screens/devices_screen.dart';
+import 'package:mini_mdm_installer/src/providers/ios_device_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -15,13 +16,16 @@ class AdbManagerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => DeviceProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DeviceProvider()),
+        ChangeNotifierProvider(create: (_) => IosDeviceProvider()),
+      ],
       child: MaterialApp(
-        title: 'ADB Manager',
+        title: 'MDM Installer',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
-        home: const DevicesScreen(),
+        home: const ModeSelectScreen(),
       ),
     );
   }
