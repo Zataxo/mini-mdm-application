@@ -26,7 +26,7 @@ Below is a visual walk-through of the utility interface handling wireless networ
 
 |                                                              🍏 5. iOS IPA Deployment Engine                                                               |
 | :--------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| ![iOS IPA Manager Dashboard](assets/images/05_ipa_manager.png) <br> _Dedicated pipeline for code-signing checks and provisioning iOS hardware over macOS._ |
+| ![iOS IPA Manager Dashboard](assets/images/ipa-manager.png) <br> _Dedicated pipeline for code-signing checks and provisioning iOS hardware over macOS._ |
 
 ---
 
