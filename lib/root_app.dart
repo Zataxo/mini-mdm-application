@@ -30,7 +30,12 @@ class ModeSelectScreen extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.accentGlow.withValues(alpha: 0.25),
-                        blurRadius: 18,
+                        blurRadius: 5,
+                        spreadRadius: 1,
+                      ),
+                      BoxShadow(
+                        color: AppColors.blueGlow.withValues(alpha: 0.25),
+                        blurRadius: 5,
                         spreadRadius: 1,
                       ),
                     ],

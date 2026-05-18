@@ -128,7 +128,7 @@ class _TopBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Mini MDM Installer',
+                    'APK Manager',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Text(

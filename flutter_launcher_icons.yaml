@@ -1,0 +1,12 @@
+# Ensure this block is at the very bottom of your pubspec.yaml file
+flutter_launcher_icons:
+  image_path: "assets/icons/mini_mdm_logo.png"
+
+  windows:
+    generate: true
+    image_path: "assets/icons/mini_mdm_logo.png"
+    icon_size: 256 # Changed to 256 for crisp quality on high-res Windows displays
+
+  macos:
+    generate: true
+    image_path: "assets/icons/mini_mdm_logo.png"
