@@ -339,7 +339,9 @@ class _AppsList extends StatelessWidget {
                   children: [
                     Text(
                       app.name,
-                      style: Theme.of(context).textTheme.titleSmall,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
