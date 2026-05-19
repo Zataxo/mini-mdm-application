@@ -124,6 +124,13 @@ class IosDeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setIpaPath(String path) {
+    if (!File(path).existsSync()) return;
+    _selectedIpaPath = path;
+    _installResults = [];
+    notifyListeners();
+  }
+
   Future<void> installToSelected() async {
     final deviceIds = _selectedDeviceIds.toList();
     final ipaPath = _selectedIpaPath;
