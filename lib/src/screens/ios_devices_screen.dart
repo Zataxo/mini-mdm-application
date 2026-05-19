@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mini_mdm_installer/config/theme/app_theme.dart';
 import 'package:mini_mdm_installer/core/models/ios_device_model.dart';
 import 'package:mini_mdm_installer/src/providers/ios_device_provider.dart';
+import 'package:mini_mdm_installer/src/screens/ipa_resign_screen.dart';
 import 'package:mini_mdm_installer/src/screens/ios_installed_apps_screen.dart';
 import 'package:mini_mdm_installer/src/widgets/empty_state_widget.dart';
 import 'package:provider/provider.dart';
@@ -99,48 +100,6 @@ class _TopBar extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          TextButton.icon(
-            onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
-            icon: const Icon(Icons.apps_rounded, size: 18),
-            label: const Text('Modes'),
-          ),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            onPressed: provider.installing || provider.uninstalling
-                ? null
-                : provider.resetAll,
-            icon: const Icon(Icons.restart_alt_rounded, size: 18),
-            label: const Text('Reset'),
-          ),
-          const SizedBox(width: 8),
-          if (provider.devices.isNotEmpty)
-            OutlinedButton.icon(
-              onPressed: canUse && !provider.installing
-                  ? () => provider.selectAll(!provider.allSelected)
-                  : null,
-              icon: Icon(
-                provider.allSelected
-                    ? Icons.deselect_rounded
-                    : Icons.select_all_rounded,
-                size: 18,
-              ),
-              label: Text(provider.allSelected ? 'Deselect' : 'Select All'),
-            ),
-          if (provider.devices.isNotEmpty) const SizedBox(width: 8),
-          TextButton.icon(
-            onPressed: canUse && !provider.installing
-                ? provider.scanDevices
-                : null,
-            icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('Refresh'),
-          ),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(
-            onPressed: canUse && !provider.installing ? provider.pickIpa : null,
-            icon: const Icon(Icons.upload_file_rounded, size: 18),
-            label: const Text('Pick IPA'),
-          ),
-          const SizedBox(width: 8),
           ElevatedButton.icon(
             onPressed: canInstall && !provider.installing
                 ? provider.installToSelected
@@ -161,8 +120,129 @@ class _TopBar extends StatelessWidget {
                   : 'Install (${provider.selectedDeviceIds.length})',
             ),
           ),
+          const SizedBox(width: 8),
+          _ActionsMenu(provider: provider, canUse: canUse),
         ],
       ),
+    );
+  }
+}
+
+class _ActionsMenu extends StatelessWidget {
+  final IosDeviceProvider provider;
+  final bool canUse;
+
+  const _ActionsMenu({required this.provider, required this.canUse});
+
+  @override
+  Widget build(BuildContext context) {
+    final disabled = provider.installing || provider.uninstalling;
+    return PopupMenuButton<_IosAction>(
+      tooltip: 'Actions',
+      icon: const Icon(Icons.more_vert_rounded, color: AppColors.textSecondary),
+      color: AppColors.surface,
+      onSelected: (action) async {
+        switch (action) {
+          case _IosAction.modes:
+            Navigator.popUntil(context, (r) => r.isFirst);
+            return;
+          case _IosAction.reset:
+            provider.resetAll();
+            return;
+          case _IosAction.selectAll:
+            provider.selectAll(!provider.allSelected);
+            return;
+          case _IosAction.refresh:
+            if (canUse && !provider.installing) {
+              await provider.scanDevices();
+            }
+            return;
+          case _IosAction.pickIpa:
+            if (canUse && !provider.installing) {
+              await provider.pickIpa();
+            }
+            return;
+          case _IosAction.resign:
+            if (!canUse) return;
+            if (disabled) return;
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const IpaResignScreen()),
+            );
+            return;
+        }
+      },
+      itemBuilder: (_) {
+        return [
+          const PopupMenuItem(
+            value: _IosAction.modes,
+            child: _MenuRow(icon: Icons.apps_rounded, label: 'Modes'),
+          ),
+          PopupMenuItem(
+            value: _IosAction.resign,
+            enabled: canUse && !disabled,
+            child: const _MenuRow(
+              icon: Icons.verified_user_rounded,
+              label: 'Resign IPA',
+            ),
+          ),
+          PopupMenuItem(
+            value: _IosAction.pickIpa,
+            enabled: canUse && !provider.installing,
+            child: const _MenuRow(
+              icon: Icons.upload_file_rounded,
+              label: 'Pick IPA',
+            ),
+          ),
+          PopupMenuItem(
+            value: _IosAction.refresh,
+            enabled: canUse && !provider.installing,
+            child: const _MenuRow(
+              icon: Icons.refresh_rounded,
+              label: 'Refresh',
+            ),
+          ),
+          if (provider.devices.isNotEmpty)
+            PopupMenuItem(
+              value: _IosAction.selectAll,
+              enabled: canUse && !provider.installing,
+              child: _MenuRow(
+                icon: provider.allSelected
+                    ? Icons.deselect_rounded
+                    : Icons.select_all_rounded,
+                label: provider.allSelected ? 'Deselect all' : 'Select all',
+              ),
+            ),
+          PopupMenuItem(
+            value: _IosAction.reset,
+            enabled: !disabled,
+            child: const _MenuRow(
+              icon: Icons.restart_alt_rounded,
+              label: 'Reset',
+            ),
+          ),
+        ];
+      },
+    );
+  }
+}
+
+enum _IosAction { modes, resign, pickIpa, refresh, selectAll, reset }
+
+class _MenuRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _MenuRow({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.textSecondary),
+        const SizedBox(width: 10),
+        Text(label, style: const TextStyle(color: AppColors.textPrimary)),
+      ],
     );
   }
 }
@@ -247,25 +327,29 @@ class _Body extends StatelessWidget {
         if (provider.installResults.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-            child: _InfoBar(
+            child: _CollapsibleLogBar(
               icon: provider.installResults.every((r) => r.success)
                   ? Icons.check_circle_outline_rounded
                   : Icons.error_outline_rounded,
+              title: 'Install log',
               text: provider.installResults
                   .map((r) => '${r.deviceName}: ${r.message}')
                   .join('\n'),
+              onClear: provider.clearInstallResults,
             ),
           ),
         if (provider.uninstallResults.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-            child: _InfoBar(
+            child: _CollapsibleLogBar(
               icon: provider.uninstallResults.every((r) => r.success)
                   ? Icons.check_circle_outline_rounded
                   : Icons.error_outline_rounded,
+              title: 'Uninstall log',
               text: provider.uninstallResults
                   .map((r) => '${r.deviceName}: ${r.message}')
                   .join('\n'),
+              onClear: provider.clearUninstallResults,
             ),
           ),
         Expanded(
@@ -391,6 +475,7 @@ class _InfoBar extends StatelessWidget {
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 16, color: AppColors.textSecondary),
           const SizedBox(width: 10),
@@ -401,6 +486,117 @@ class _InfoBar extends StatelessWidget {
                 color: AppColors.textPrimary,
                 fontSize: 12,
                 fontFamily: 'monospace',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CollapsibleLogBar extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String text;
+  final VoidCallback? onClear;
+
+  const _CollapsibleLogBar({
+    required this.icon,
+    required this.title,
+    required this.text,
+    this.onClear,
+  });
+
+  @override
+  State<_CollapsibleLogBar> createState() => _CollapsibleLogBarState();
+}
+
+class _CollapsibleLogBarState extends State<_CollapsibleLogBar> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final lines = widget.text
+        .split('\n')
+        .where((l) => l.trim().isNotEmpty)
+        .toList();
+    final summary = lines.isEmpty ? widget.text : lines.first;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(widget.icon, size: 16, color: AppColors.textSecondary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              widget.title,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '${lines.length} line(s)',
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _expanded ? widget.text : summary,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 11.5,
+                            height: 1.35,
+                            fontFamily: 'monospace',
+                          ),
+                          maxLines: _expanded ? 20 : 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  if (widget.onClear != null)
+                    IconButton(
+                      onPressed: widget.onClear,
+                      icon: const Icon(Icons.clear_rounded),
+                      color: AppColors.textSecondary,
+                      tooltip: 'Clear',
+                    ),
+                  Icon(
+                    _expanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
+                ],
               ),
             ),
           ),

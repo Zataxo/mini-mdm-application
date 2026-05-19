@@ -6,6 +6,20 @@ No more manual installation scripts or repetitive command-line loops for each se
 
 ---
 
+## 🛠️ What's New in v1.1.4: Advanced iOS IPA Re-Signing Engine
+
+We've introduced a powerful, low-level binary manipulation pipeline that allows you to mutate, sign, and provision iOS `.ipa` files directly from the desktop interface before deployment.
+
+### Key Capabilities:
+
+- **✍️ Dynamic IPA Signing:** Sign completely unsigned payloads or fully re-sign existing IPAs using local macOS provisioning profiles and distribution certificates.
+- **💎 Embedded Framework Alignment:** Automatically parses, extracts, and re-signs any embedded `.framework` clusters nested deep inside the application bundle.
+- **🆔 Bundle ID Mutation:** Change the core Application Bundle Identifier on the fly to bypass provisioning mismatches or split-test multiple app iterations.
+- **📦 Framework Identity Mapping:** Recursively renames and aligns bundle identifiers inside embedded frameworks to maintain dependency integrity post-signing.
+- **⚡ Stability & Performance Upgrades:** Codebase-wide optimization passes, minor layout bug fixes, and enhanced multi-threaded terminal streaming feedback for long-running deployments.
+
+---
+
 ## 📸 Screenshots & Demo Interface
 
 Below is a visual walk-through of the utility interface handling wireless network handshakes and parallel deployments:
@@ -22,11 +36,11 @@ Below is a visual walk-through of the utility interface handling wireless networ
 | :----------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
 | ![Bulk APK/IPA Installation](assets/images/bulk-install.png) <br> _Streaming deployment progress to all nodes simultaneously._ | ![Installed Apps Management](assets/images/installed-apps.png) <br> _Viewing, sorting, and batch-managing apps currently on the devices._ |
 
-### 3. iOS Tooling Expansion
+### 3. iOS Tooling Expansion & Binary Mutation
 
-|                                                              🍏 5. iOS IPA Deployment Engine                                                               |
-| :--------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| ![iOS IPA Manager Dashboard](assets/images/ipa-manager.png) <br> _Dedicated pipeline for code-signing checks and provisioning iOS hardware over macOS._ |
+|                                                          🍏 5. iOS IPA Deployment Engine                                                          |                                                           🔑 6. IPA Re-Signer & Embedded Frameworks                                                           |
+| :-----------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| ![iOS IPA Manager Dashboard](assets/images/ipa-manager.png) <br> _Dedicated pipeline for device provisioning and native distribution over macOS._ | ![iOS Re-signing Engine](assets/images/ios-resign.png) <br> _Automated workspace for dynamic provisioning updates, identity alignment, and bundle injection._ |
 
 ---
 
