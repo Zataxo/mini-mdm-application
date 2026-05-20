@@ -123,6 +123,24 @@ class AdbService {
     return serial;
   }
 
+  Future<String> _resolveSerialForTarget(String serial) async {
+    final check = await _run([_adbExecutable, '-s', serial, 'get-state']);
+    if (check.exitCode == 0) return serial;
+
+    final out = (check.stdout.toString() + check.stderr.toString())
+        .toLowerCase();
+    final looksNotFound = out.contains('device') && out.contains('not found');
+    if (!looksNotFound) return serial;
+
+    final base = _deviceKey(serial);
+    if (base != serial) {
+      final retry = await _run([_adbExecutable, '-s', base, 'get-state']);
+      if (retry.exitCode == 0) return base;
+    }
+
+    return serial;
+  }
+
   int _deviceRank(DeviceModel d) {
     int statusRank;
     switch (d.status) {
@@ -364,6 +382,97 @@ class AdbService {
   ) async {
     final futures = serials.map((s) async {
       final res = await installApk(s, apkPath);
+      return MapEntry(s, res);
+    });
+    final entries = await Future.wait(futures);
+    return Map.fromEntries(entries);
+  }
+
+  // ─── DPM (Device Policy Manager) ────────────────────────────────────────────
+
+  Future<(bool, String)> dpmListOwners(String serial) async {
+    final target = await _resolveSerialForTarget(serial);
+    final result = await _run([
+      _adbExecutable,
+      '-s',
+      target,
+      'shell',
+      'dpm',
+      'list-owners',
+    ]);
+    final out = (result.stdout.toString() + result.stderr.toString()).trim();
+    return (result.exitCode == 0, out);
+  }
+
+  Future<(bool, String)> dpmSetDeviceOwner(
+    String serial,
+    String component,
+  ) async {
+    final target = await _resolveSerialForTarget(serial);
+    final result = await _run([
+      _adbExecutable,
+      '-s',
+      target,
+      'shell',
+      'dpm',
+      'set-device-owner',
+      component,
+    ]);
+    final out = (result.stdout.toString() + result.stderr.toString()).trim();
+    final success =
+        result.exitCode == 0 && out.toLowerCase().contains('success');
+    return (success, out);
+  }
+
+  Future<(bool, String)> dpmRemoveActiveAdmin(
+    String serial,
+    String component,
+  ) async {
+    final target = await _resolveSerialForTarget(serial);
+    final result = await _run([
+      _adbExecutable,
+      '-s',
+      target,
+      'shell',
+      'dpm',
+      'remove-active-admin',
+      component,
+    ]);
+    final out = (result.stdout.toString() + result.stderr.toString()).trim();
+    final success =
+        result.exitCode == 0 && !out.toLowerCase().contains('error');
+    return (success, out);
+  }
+
+  Future<Map<String, (bool, String)>> dpmListOwnersMany(
+    List<String> serials,
+  ) async {
+    final futures = serials.map((s) async {
+      final res = await dpmListOwners(s);
+      return MapEntry(s, res);
+    });
+    final entries = await Future.wait(futures);
+    return Map.fromEntries(entries);
+  }
+
+  Future<Map<String, (bool, String)>> dpmSetDeviceOwnerMany(
+    List<String> serials,
+    String component,
+  ) async {
+    final futures = serials.map((s) async {
+      final res = await dpmSetDeviceOwner(s, component);
+      return MapEntry(s, res);
+    });
+    final entries = await Future.wait(futures);
+    return Map.fromEntries(entries);
+  }
+
+  Future<Map<String, (bool, String)>> dpmRemoveActiveAdminMany(
+    List<String> serials,
+    String component,
+  ) async {
+    final futures = serials.map((s) async {
+      final res = await dpmRemoveActiveAdmin(s, component);
       return MapEntry(s, res);
     });
     final entries = await Future.wait(futures);

@@ -614,7 +614,7 @@ class _NotSupportedBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-      color: AppColors.orange.withOpacity(0.1),
+      color: AppColors.orange.withValues(alpha: 0.1),
       child: const Row(
         children: [
           Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.orange),
@@ -639,7 +639,7 @@ class _DevicectlMissingBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-      color: AppColors.orange.withOpacity(0.1),
+      color: AppColors.orange.withValues(alpha: 0.1),
       child: const Row(
         children: [
           Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.orange),

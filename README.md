@@ -6,7 +6,19 @@ No more manual installation scripts or repetitive command-line loops for each se
 
 ---
 
-## 🛠️ What's New in v1.1.4: Advanced iOS IPA Re-Signing Engine
+## 🛠️ What's New in v1.2.0
+
+### Android: Device Owner & Policy Controls (DPM)
+
+You can now run key **Device Policy Manager (DPM)** actions directly from the UI (on the selected devices):
+
+- **List device/profile owners:** `adb shell dpm list-owners`
+- **Set device owner:** `adb shell dpm set-device-owner <package/.DeviceAdminReceiver>`
+- **Remove active admin:** `adb shell dpm remove-active-admin <package/.DeviceAdminReceiver>`
+
+> Note: Device owner provisioning has Android security requirements (often requires a fresh / managed setup). If the device is already provisioned with accounts, `set-device-owner` may fail by design.
+
+### iOS: Advanced IPA Re-Signing Engine
 
 We've introduced a powerful, low-level binary manipulation pipeline that allows you to mutate, sign, and provision iOS `.ipa` files directly from the desktop interface before deployment.
 
@@ -36,9 +48,30 @@ Below is a visual walk-through of the utility interface handling wireless networ
 | :----------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------: |
 | ![Bulk APK/IPA Installation](assets/images/bulk-install.png) <br> _Streaming deployment progress to all nodes simultaneously._ | ![Installed Apps Management](assets/images/installed-apps.png) <br> _Viewing, sorting, and batch-managing apps currently on the devices._ |
 
+### 2.1 Android Device Owner / DPM Actions
+
+After selecting devices and choosing an APK, the installer screen exposes a **Device Policy (DPM)** panel to help with managed-device workflows:
+
+- List current device/profile owners for the selected devices
+- Set a device owner by providing the admin receiver component (example):
+  - `package_name/.MyDeviceAdminReceiverClass`
+- Remove an active admin component when needed
+
+This feature is backed by the standard ADB DPM commands:
+
+```bash
+adb shell dpm list-owners
+adb shell dpm set-device-owner <package/.DeviceAdminReceiver>
+adb shell dpm remove-active-admin <package/.DeviceAdminReceiver>
+```
+
+|                                       🛡️ 5. Android Device Owner / DPM Panel                                        |
+| :-----------------------------------------------------------------------------------------------------------------: |
+| ![Android DPM Panel](assets/images/dpm-prov.png) <br> _Device owner / admin actions executed via ADB DPM commands._ |
+
 ### 3. iOS Tooling Expansion & Binary Mutation
 
-|                                                          🍏 5. iOS IPA Deployment Engine                                                          |                                                           🔑 6. IPA Re-Signer & Embedded Frameworks                                                           |
+|                                                          🍏 6. iOS IPA Deployment Engine                                                          |                                                           🔑 7. IPA Re-Signer & Embedded Frameworks                                                           |
 | :-----------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | ![iOS IPA Manager Dashboard](assets/images/ipa-manager.png) <br> _Dedicated pipeline for device provisioning and native distribution over macOS._ | ![iOS Re-signing Engine](assets/images/ios-resign.png) <br> _Automated workspace for dynamic provisioning updates, identity alignment, and bundle injection._ |
 

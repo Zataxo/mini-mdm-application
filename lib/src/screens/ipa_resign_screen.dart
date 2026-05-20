@@ -190,6 +190,7 @@ class _IpaResignScreenState extends State<IpaResignScreen> {
     final identityId = _selectedIdentityId;
     final mainProfilePath = _selectedMainProfilePath;
     if (ipaPath == null || identityId == null || mainProfilePath == null)
+      // ignore: curly_braces_in_flow_control_structures
       return;
 
     final newBundleId = _bundleIdController.text.trim().isEmpty
