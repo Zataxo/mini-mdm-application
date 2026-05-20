@@ -374,7 +374,7 @@ class _AdbWarningBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-      color: AppColors.orange.withOpacity(0.1),
+      color: AppColors.orange.withValues(alpha: 0.1),
       child: Row(
         children: [
           const Icon(
@@ -452,7 +452,7 @@ class _AdbLocateDialogState extends State<_AdbLocateDialog> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: AppColors.orange.withOpacity(0.15),
+                          color: AppColors.orange.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(

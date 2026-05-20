@@ -318,6 +318,97 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isRunningDpm = false;
+  bool get isRunningDpm => _isRunningDpm;
+
+  List<OperationResult> _dpmResults = [];
+  List<OperationResult> get dpmResults => _dpmResults;
+
+  Future<void> listDeviceOwnersSelected() async {
+    if (selectedDevices.isEmpty) return;
+
+    _isRunningDpm = true;
+    _dpmResults = [];
+    notifyListeners();
+
+    final serials = selectedDevices.map((d) => d.serial).toList();
+    final results = await _adb.dpmListOwnersMany(serials);
+
+    _dpmResults = results.entries.map((e) {
+      final device = _devices.firstWhere(
+        (d) => d.serial == e.key,
+        orElse: () => DeviceModel(serial: e.key, ip: e.key, port: ''),
+      );
+      return OperationResult(
+        serial: e.key,
+        deviceName: device.displayName,
+        success: e.value.$1,
+        message: e.value.$2,
+      );
+    }).toList();
+
+    _isRunningDpm = false;
+    notifyListeners();
+  }
+
+  Future<void> setDeviceOwnerSelected(String component) async {
+    if (selectedDevices.isEmpty) return;
+    final trimmed = component.trim();
+    if (trimmed.isEmpty) return;
+
+    _isRunningDpm = true;
+    _dpmResults = [];
+    notifyListeners();
+
+    final serials = selectedDevices.map((d) => d.serial).toList();
+    final results = await _adb.dpmSetDeviceOwnerMany(serials, trimmed);
+
+    _dpmResults = results.entries.map((e) {
+      final device = _devices.firstWhere(
+        (d) => d.serial == e.key,
+        orElse: () => DeviceModel(serial: e.key, ip: e.key, port: ''),
+      );
+      return OperationResult(
+        serial: e.key,
+        deviceName: device.displayName,
+        success: e.value.$1,
+        message: e.value.$2,
+      );
+    }).toList();
+
+    _isRunningDpm = false;
+    notifyListeners();
+  }
+
+  Future<void> removeActiveAdminSelected(String component) async {
+    if (selectedDevices.isEmpty) return;
+    final trimmed = component.trim();
+    if (trimmed.isEmpty) return;
+
+    _isRunningDpm = true;
+    _dpmResults = [];
+    notifyListeners();
+
+    final serials = selectedDevices.map((d) => d.serial).toList();
+    final results = await _adb.dpmRemoveActiveAdminMany(serials, trimmed);
+
+    _dpmResults = results.entries.map((e) {
+      final device = _devices.firstWhere(
+        (d) => d.serial == e.key,
+        orElse: () => DeviceModel(serial: e.key, ip: e.key, port: ''),
+      );
+      return OperationResult(
+        serial: e.key,
+        deviceName: device.displayName,
+        success: e.value.$1,
+        message: e.value.$2,
+      );
+    }).toList();
+
+    _isRunningDpm = false;
+    notifyListeners();
+  }
+
   Future<void> installToSelected() async {
     if (_selectedApkPath == null || selectedDevices.isEmpty) return;
 
@@ -398,6 +489,11 @@ class DeviceProvider extends ChangeNotifier {
 
   void clearUninstallResults() {
     _uninstallResults = [];
+    notifyListeners();
+  }
+
+  void clearDpmResults() {
+    _dpmResults = [];
     notifyListeners();
   }
 }

@@ -43,6 +43,23 @@ class InstallScreen extends StatelessWidget {
           });
         }
 
+        if (provider.dpmResults.isNotEmpty && !provider.isRunningDpm) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => OperationResultDialog(
+                title: 'Device Policy Results',
+                results: provider.dpmResults,
+                onClose: () {
+                  provider.clearDpmResults();
+                  Navigator.pop(context);
+                },
+              ),
+            );
+          });
+        }
+
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
@@ -80,6 +97,11 @@ class InstallScreen extends StatelessWidget {
                   onPick: () => _pickApk(provider),
                 ),
                 const SizedBox(height: 20),
+
+                if (provider.selectedApkPath != null)
+                  _DevicePolicyCard(provider: provider),
+                if (provider.selectedApkPath != null)
+                  const SizedBox(height: 20),
 
                 // Install button
                 if (provider.selectedApkPath != null)
@@ -124,6 +146,127 @@ class InstallScreen extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _DevicePolicyCard extends StatefulWidget {
+  final DeviceProvider provider;
+
+  const _DevicePolicyCard({required this.provider});
+
+  @override
+  State<_DevicePolicyCard> createState() => _DevicePolicyCardState();
+}
+
+class _DevicePolicyCardState extends State<_DevicePolicyCard> {
+  final _componentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _componentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = widget.provider;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.admin_panel_settings_rounded,
+                color: AppColors.orange,
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Device Policy (DPM)',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Use these actions after installing (or when the app is already on device). Device owner actions may require a fresh device / no accounts.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _componentController,
+            decoration: const InputDecoration(
+              labelText: 'Device admin receiver component',
+              hintText: 'com.example/.MyDeviceAdminReceiver',
+            ),
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: provider.isRunningDpm
+                      ? null
+                      : provider.listDeviceOwnersSelected,
+                  icon: const Icon(Icons.list_alt_rounded, size: 16),
+                  label: const Text('List Owners'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: provider.isRunningDpm
+                      ? null
+                      : () => provider.setDeviceOwnerSelected(
+                          _componentController.text,
+                        ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.orange,
+                    foregroundColor: AppColors.background,
+                  ),
+                  icon: provider.isRunningDpm
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.background,
+                          ),
+                        )
+                      : const Icon(Icons.verified_user_rounded, size: 16),
+                  label: const Text('Set Device Owner'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: provider.isRunningDpm
+                  ? null
+                  : () => provider.removeActiveAdminSelected(
+                      _componentController.text,
+                    ),
+              icon: const Icon(Icons.remove_circle_outline_rounded, size: 16),
+              label: const Text('Remove Active Admin'),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().slideY(begin: 0.05);
   }
 }
 
